@@ -223,11 +223,6 @@ def setupOmeka(settings={},dry=False):
       ,pathBaseName),dry=dry)
   
   #change owner and group
-  #for path in paths:
-  #  pathBaseName=os.path.basename(path)
-  #  execute(shutil.chown,os.path.join(settings["documentRoot"],pathBaseName)
-  #    ,user=settings["owner"]
-  #    ,group=settings["group"],dry=dry)#this is not recursive
   for root,dirs,files in os.walk(settings["documentRoot"]):
     
     #change owner of directories
@@ -250,6 +245,9 @@ def setupOmeka(settings={},dry=False):
   #set mysql root password (initial install has no root password)
   execute(subprocess.call,["mysqladmin","-u","root","password",settings["dbpass"]],dry=dry)
   
+  #create omeka database
+  execute(subprocess.call,["mysql","--user="+settings["dbuser"],"--password="+settings["dbpass"],"-e","\"create database "+settings["dbname"]+"\""],dry=dry)
+  
   #set database settings for omeka
   omekaDBSettingsfile=os.path.join(settings["documentRoot"],"db.ini")
   execute(replaceStrInFile,"host     = \"XXXXXXX\"","host     = \""+settings["dbserver"]+"\""
@@ -266,12 +264,18 @@ def setupOmeka(settings={},dry=False):
     ,group=settings["group"],dry=dry)
   execute(os.chmod,omekaDBSettingsfile,0o400,dry=dry)
   
+  #enable apache2 mod_rewrite
+  execute(subprocess.call,["a2enmod","rewrite"],dry=dry)
+  
+  
+  
   #need to create a database for omeka
   #mysql command is "create database omeka;"
   #need to enable apache2 mod_rewrite with
   #command "sudo a2enmod rewrite"
   #then restart apache with "sudo service apache2 restart"
   #TODO: create a method to install plugins? At the very least install the plugins we need
+  #need to change "AllowOverride None" to "AllowOverride All" under <Directory /var/www> in /etc/apache2/apache2.conf to allow the omeka .htacces file to work
   
   return (settings["adminName"],settings["adminPass"],settings)
 def securePHP(dry=False):

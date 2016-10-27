@@ -2,14 +2,13 @@
 package_update: true
 package_upgrade: true
 packages:
-  - apache2
   - git
+  - unzip
   - php5
-  - mysql-server
   - php5-mysql
-  - php5-apcu
-  - php5-gd
-  - php5-intl
+  - apache2
+  - mysql-server
+  - imagemagick
 runcmd:
   - echo -n "127.0.1.1 ">>/etc/hosts
   - cat /etc/hostname>>/etc/hosts
