@@ -270,7 +270,7 @@ def setupOmeka(settings={},dry=False):
   #edit apache2 site config to allow .htaccess file to work
   execute(replaceStrInFile
     ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride None\n"
-    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n"
+    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride all\n"
     ,"/etc/apache2/apache2.conf",dry=dry)
   
   #need to create a database for omeka
