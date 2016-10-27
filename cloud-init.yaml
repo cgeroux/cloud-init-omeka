@@ -1,0 +1,19 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - apache2
+  - git
+  - php5
+  - mysql-server
+  - php5-mysql
+  - php5-apcu
+  - php5-gd
+  - php5-intl
+runcmd:
+  - echo -n "127.0.1.1 ">>/etc/hosts
+  - cat /etc/hostname>>/etc/hosts
+  - ["cd","/tmp"]
+  - ["git","clone","https://github.com/cgeroux/cloud-init-omeka.git"]
+  - ["/tmp/cloud-init-omeka/omeka-setup.py"]
+
