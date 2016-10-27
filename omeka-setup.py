@@ -403,6 +403,8 @@ def configureSSL(domainName,dry=False):
   """Configures apache to use a self-signed SSL certificate
   """
   
+  #TODO: should re-work this to use certbot
+  
   #enable ssl mod
   execute(subprocess.call,["a2enmod","ssl"],dry=dry)
   restartApache(dry=dry)
@@ -508,8 +510,5 @@ def main():
   #
   if settingsUsed["enableSSL"]:
     configureSSL(domainName,dry=dryRun)
-  
-  print("Omeka Admin Username:"+adminUser)
-  print("Omeka Admin password:"+adminPassWd)
 if __name__ == "__main__":
  main()
