@@ -202,7 +202,7 @@ def setupOmeka(settings={},dry=False):
   #download and unzip omeka
   execute(subprocess.call,["wget",url,"--directory-prefix="
     +settings["tmpDir"]],dry=dry)
-  execute(subprocess.call,["unzip",tmpDir+".zip","-d",tmpDir],dry=dry)
+  execute(subprocess.call,["unzip",tmpDir+".zip","-d",settings["tmpDir"]],dry=dry)
   
   #remove existing files in document root
   if settings["purgeDocRoot"]:
@@ -223,16 +223,25 @@ def setupOmeka(settings={},dry=False):
       ,pathBaseName),dry=dry)
   
   #change owner and group
-  for path in paths:
-    pathBaseName=os.path.basename(path)
-    execute(shutil.chown,os.path.join(settings["documentRoot"],pathBaseName)
-      ,user=settings["owner"]
-      ,group=settings["group"],dry=dry)#this is not recursive
+  #for path in paths:
+  #  pathBaseName=os.path.basename(path)
+  #  execute(shutil.chown,os.path.join(settings["documentRoot"],pathBaseName)
+  #    ,user=settings["owner"]
+  #    ,group=settings["group"],dry=dry)#this is not recursive
   for root,dirs,files in os.walk(settings["documentRoot"]):
-    print("root:"+str(root))
-    print("dirs:"+str(dirs))
-    print("files:"+str(files))
-  
+    
+    #change owner of directories
+    for dir in dirs:
+      execute(shutil.chown,os.path.join(root,dir)
+        ,user=settings["owner"]
+        ,group=settings["group"],dry=dry)#this is not recursive
+   
+    #change owner of files
+    for file in files:
+      execute(shutil.chown,os.path.join(root,file)
+        ,user=settings["owner"]
+        ,group=settings["group"],dry=dry)#this is not recursive
+        
   #clean up temporary files
   if settings["cleanUp"]:
     execute(os.removedirs,tmpDir,dry=dry)
