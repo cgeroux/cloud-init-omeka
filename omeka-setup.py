@@ -30,7 +30,7 @@ def parseOptions():
     ,type="string",default="2.4"
     ,help="Set the version of omeka [default: %default].")
   parser.add_option("--omeka-patch",dest="patch",action="store"
-    ,type="string",default="0"
+    ,type="string",default="1"
     ,help="Set the patch level of omeka [default: %default].")
   parser.add_option("--site-name",dest="siteName",action="store"
     ,type="string",default="Test site"
@@ -246,7 +246,7 @@ def setupOmeka(settings={},dry=False):
   execute(subprocess.call,["mysqladmin","-u","root","password",settings["dbpass"]],dry=dry)
   
   #create omeka database
-  execute(subprocess.call,["mysql","--user="+settings["dbuser"],"--password="+settings["dbpass"],"-e","\"create database "+settings["dbname"]+"\""],dry=dry)
+  execute(subprocess.call,["mysql","--user="+settings["dbuser"],"--password="+settings["dbpass"],"-e","create database "+settings["dbname"]],dry=dry)
   
   #set database settings for omeka
   omekaDBSettingsfile=os.path.join(settings["documentRoot"],"db.ini")
@@ -267,7 +267,11 @@ def setupOmeka(settings={},dry=False):
   #enable apache2 mod_rewrite
   execute(subprocess.call,["a2enmod","rewrite"],dry=dry)
   
-  
+  #edit apache2 site config to allow .htaccess file to work
+  execute(replaceStrInFile
+    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride None\n"
+    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n"
+    ,"/etc/apache2/apache2.conf",dry=dry)
   
   #need to create a database for omeka
   #mysql command is "create database omeka;"
