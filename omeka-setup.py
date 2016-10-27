@@ -167,10 +167,6 @@ def setupOmeka(settings={},dry=False):
   defaultSettings={
     "version":"2.4"
     ,"patch":"1"
-    ,"siteName":"Test site"
-    ,"adminName":adminName
-    ,"adminPass":adminPassWd
-    ,"server":"http://127.0.0.1/"
     ,"dbserver":"localhost"
     ,"dbuser":"root"
     ,"dbpass":dbPassWd
@@ -268,11 +264,13 @@ def setupOmeka(settings={},dry=False):
   execute(subprocess.call,["a2enmod","rewrite"],dry=dry)
   
   #edit apache2 site config to allow .htaccess file to work
-  execute(replaceStrInFile
-    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride None\n"
-    ,"<Directory /var/www/>\n        Options Indexes FollowSymLinks\n        AllowOverride all\n"
+  numReplaces=execute(replaceStrInFileRe
+    ,"<Directory /var/www/>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n"
+    ,"<Directory /var/www/>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride all\n"
     ,"/etc/apache2/apache2.conf",dry=dry)
-  
+    
+  if numReplaces!=1:
+    raise Exception("replaced "+str(numReplaces)+" in apache configuration")
   #need to create a database for omeka
   #mysql command is "create database omeka;"
   #need to enable apache2 mod_rewrite with
@@ -281,7 +279,7 @@ def setupOmeka(settings={},dry=False):
   #TODO: create a method to install plugins? At the very least install the plugins we need
   #need to change "AllowOverride None" to "AllowOverride All" under <Directory /var/www> in /etc/apache2/apache2.conf to allow the omeka .htacces file to work
   
-  return (settings["adminName"],settings["adminPass"],settings)
+  return settings
 def securePHP(dry=False):
   """Ensures some basic php security settings are set
   """
@@ -503,11 +501,9 @@ def main():
   secureMySQL(dry=dryRun)
   
   #setup omeka
-  (adminUser,adminPassWd,settingsUsed)=setupOmeka(
-    settings=settings,dry=dryRun)
+  settingsUsed=setupOmeka(settings=settings,dry=dryRun)
   
-  #adjust some apache settings to improve security
-  secureApache(settingsUsed["documentRoot"],dry=dryRun)
+  execute(restartApache,dry=dryRun)
   
   #
   if settingsUsed["enableSSL"]:
